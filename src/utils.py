@@ -66,7 +66,7 @@ def _render_state_ascii(state: State) -> str:
     river      = "~~~rio~~~"
 
     _width = 17 # Ancho fijo
-    left_bank  = left_bank.ljust(_width)
+    left_bank  = left_bank.rjust(_width)
     right_bank = right_bank.ljust(_width)
 
     return f"  {left_bank}   {river}   {right_bank}"
