@@ -1,12 +1,11 @@
 """
 main.py
 Punto de entrada del proyecto: Misioneros y Canibales.
-Ejecuta BFS y DFS y muestra los resultados en consola.
+Ejecuta BFS y DFS midiendo tiempo de ejecucion y memoria utilizada.
 """
-
 from src.state import State
 from src.algorithms import breadth_first_search, depth_first_search
-from src.utils import print_solution
+from src.utils import measure_execution_performance
 
 
 def main() -> None:
@@ -17,20 +16,18 @@ def main() -> None:
         boat_is_on_left_bank=True,
     )
 
-    # --- Busqueda en Amplitud (BFS) ---
-    goal_bfs, nodes_bfs = breadth_first_search(initial_state)
-    print_solution(
+    # Busqueda en Amplitud (BFS)
+    measure_execution_performance(
+        algorithm_function=breadth_first_search,
+        initial_state=initial_state,
         algorithm_name="Busqueda en Amplitud (BFS)",
-        final_state=goal_bfs,
-        nodes_explored=nodes_bfs,
     )
 
-    # --- Busqueda en Profundidad (DFS) ---
-    goal_dfs, nodes_dfs = depth_first_search(initial_state)
-    print_solution(
+    # Busqueda en Profundidad (DFS)
+    measure_execution_performance(
+        algorithm_function=depth_first_search,
+        initial_state=initial_state,
         algorithm_name="Busqueda en Profundidad (DFS)",
-        final_state=goal_dfs,
-        nodes_explored=nodes_dfs,
     )
 
 
