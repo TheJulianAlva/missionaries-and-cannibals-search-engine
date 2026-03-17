@@ -1,0 +1,4 @@
+# Core dependencies for the search algorithms
+# Note: For this project, we are using built-in Python libraries (collections, time, tracemalloc).
+# If you develop additional visualizations or tools, they will be listed here.
+# Currently, no external packages are strictly required for the logic.
