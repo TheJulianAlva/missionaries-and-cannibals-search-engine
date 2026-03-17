@@ -17,7 +17,7 @@ from collections.abc import Callable
 from src.state import State
 
 
-def reconstruct_solution_path(final_state: State) -> list[str]:
+def _reconstruct_solution_path(final_state: State) -> list[str]:
     """
     Reconstruye la secuencia de acciones que llevaron al estado meta.
 
@@ -74,7 +74,7 @@ def _print_solution(
     if final_state is None:
         print("  No se encontro solucion.")
     else:
-        solution_path = reconstruct_solution_path(final_state)
+        solution_path = _reconstruct_solution_path(final_state)
         print(f"  Pasos en la solucion: {len(solution_path)}")
         print()
         for index, action in enumerate(solution_path, start=1):

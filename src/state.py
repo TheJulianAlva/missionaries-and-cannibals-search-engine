@@ -125,7 +125,7 @@ class State:
                 direction = "← Izquierda"
 
             action_description = (
-                f"Mover {missionaries_on_boat}M {cannibals_on_boat}C {direction}"
+                f"Mover {missionaries_on_boat} MISIONEROS y {cannibals_on_boat} CANIBALES {direction}"
             )
 
             candidate = State(
