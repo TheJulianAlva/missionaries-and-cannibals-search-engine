@@ -4,6 +4,7 @@ Descripción: Funciones de apoyo.
 
 Funciones disponibles:
     - reconstruct_solution_path: Reconstruye la lista de acciones desde la meta.
+    - render_state_ascii:        Dibuja el estado del río en formato ASCII.
     - print_solution: Imprime en consola la ruta de solución y las métricas.
     - measure_execution_performance: Mide tiempo de ejecución y memoria de un algoritmo.
 """
@@ -17,29 +18,58 @@ from collections.abc import Callable
 from src.state import State
 
 
-def _reconstruct_solution_path(final_state: State) -> list[str]:
+def _reconstruct_solution_path(final_state: State) -> list[State]:
     """
-    Reconstruye la secuencia de acciones que llevaron al estado meta.
+    Reconstruye la secuencia de estados desde el inicio hasta la meta.
 
     Itera hacia atrás siguiendo el atributo parent_state de cada nodo
-    hasta llegar al estado raíz (sin padre), recopilando las descripciones
-    de cada acción tomada.
+    hasta llegar al estado raíz (sin padre).
 
     Args:
         final_state: El estado meta devuelto por el algoritmo de búsqueda.
 
     Returns:
-        Lista ordenada de strings describiendo cada paso, del inicio a la meta.
+        Lista ordenada de objetos State, del inicio a la meta.
     """
-    path: list[str] = []
+    path: list[State] = []
     current: State | None = final_state
 
-    while current is not None and current.action_taken is not None:
-        path.append(current.action_taken)
+    while current is not None:
+        path.append(current)
         current = current.parent_state
 
-    path.reverse()  # El primero en la lista es el primer paso desde el inicio
+    path.reverse()
     return path
+
+
+def _render_state_ascii(state: State) -> str:
+    """
+    Genera una representación visual ASCII del estado actual del río.
+
+    Args:
+        state: El estado del problema a visualizar.
+
+    Returns:
+        String con la representación ASCII del estado.
+    """
+    left_m = "m " * state.missionaries_left
+    left_c = "c " * state.cannibals_left
+    right_m = "m " * state.missionaries_right
+    right_c = "c " * state.cannibals_right
+
+    # El bote aparece en la orilla donde está
+    boat_left  = "B " if state.boat_is_on_left_bank else "  "
+    boat_right = "B " if not state.boat_is_on_left_bank else "  "
+
+    left_bank  = f"[ {left_m}{left_c}{boat_left}]"
+    right_bank = f"[ {right_m}{right_c}{boat_right}]"
+    river      = "~~~rio~~~"
+
+    _width = 17 # Ancho fijo
+    left_bank  = left_bank.ljust(_width)
+    right_bank = right_bank.ljust(_width)
+
+    return f"  {left_bank}   {river}   {right_bank}"
 
 
 def _print_solution(
@@ -50,14 +80,8 @@ def _print_solution(
     peak_memory_kb: float | None = None,
 ) -> None:
     """
-    Imprime en consola el resultado de una búsqueda de manera estructurada.
-
-    Muestra:
-        - El nombre del algoritmo.
-        - Cada paso de la solución (si existe).
-        - El número total de nodos explorados.
-        - El tiempo de ejecución (si se proporciona).
-        - La memoria pico utilizada (si se proporciona).
+    Imprime en consola el resultado de una búsqueda de manera estructurada,
+    incluyendo la visualización ASCII de cada paso.
 
     Args:
         algorithm_name:  Nombre descriptivo del algoritmo.
@@ -66,7 +90,7 @@ def _print_solution(
         elapsed_time:    Tiempo de ejecución en segundos (opcional).
         peak_memory_kb:  Memoria pico en kilobytes (opcional).
     """
-    separator = "-" * 50
+    separator = "-" * 60
     print(f"\n{separator}")
     print(f"  Algoritmo: {algorithm_name}")
     print(separator)
@@ -74,13 +98,20 @@ def _print_solution(
     if final_state is None:
         print("  No se encontro solucion.")
     else:
-        solution_path = _reconstruct_solution_path(final_state)
-        print(f"  Pasos en la solucion: {len(solution_path)}")
+        states_path = _reconstruct_solution_path(final_state)
+        print(f"  Pasos en la solucion: {len(states_path) - 1}")
         print()
-        for index, action in enumerate(solution_path, start=1):
-            print(f"  Paso {index:>2}: {action}")
 
-    print()
+        # Estado inicial
+        print(f"  Inicio: {_render_state_ascii(states_path[0])}")
+        print()
+
+        # Estados siguientes
+        for index, state in enumerate(states_path[1:], start=1):
+            print(f"  Paso {index:>2}: {state.action_taken}")
+            print(_render_state_ascii(state))
+            print()
+
     print(f"  Nodos explorados:     {nodes_explored}")
 
     if elapsed_time is not None:
