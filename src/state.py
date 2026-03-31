@@ -1,12 +1,9 @@
-"""
-Módulo: state.py
-Descripción: Define la clase State que representa una configuración
-             del problema de Misioneros y Caníbales.
+"""Define la clase State que representa una configuración del problema.
 
 Representación del Estado:
-    - missionaries_left: número de misioneros en la orilla izquierda (0-3)
-    - cannibals_left:   número de caníbales en la orilla izquierda (0-3)
-    - boat_is_on_left_bank: True si el bote está en la orilla izquierda
+    missionaries_left (int): Número de misioneros en la orilla izquierda (0-3).
+    cannibals_left (int): Número de caníbales en la orilla izquierda (0-3).
+    boat_is_on_left_bank (bool): True si el bote está en la orilla izquierda.
 """
 
 from __future__ import annotations
@@ -25,9 +22,14 @@ TOTAL_CANNIBALS: int = 3
 
 
 class State:
-    """
-    Representa una única configuración (nodo) en el espacio de búsqueda
-    del problema.
+    """Representa una configuración (nodo) en el espacio de búsqueda.
+
+    Attributes:
+        missionaries_left (int): Número de misioneros en la orilla izquierda.
+        cannibals_left (int): Número de caníbales en la orilla izquierda.
+        boat_is_on_left_bank (bool): True si el bote está en la orilla izquierda.
+        parent_state (State | None): Estado que generó este, o None si es el inicial.
+        action_taken (str | None): Descripción de la acción que llevó a este estado.
     """
 
     def __init__(
@@ -38,15 +40,16 @@ class State:
         parent_state: State | None = None,
         action_taken: str | None = None,
     ) -> None:
-        """
-        Inicializa un nuevo estado.
+        """Inicializa un nuevo estado.
 
         Args:
-            missionaries_left: Número de misioneros en la orilla izquierda.
-            cannibals_left: Número de caníbales en la orilla izquierda.
-            boat_is_on_left_bank: True si el bote está actualmente en la orilla izquierda.
-            parent_state: El estado que generó este (para reconstrucción de ruta).
-            action_taken: Descripción legible de cómo se llegó a este estado.
+            missionaries_left (int): Número de misioneros en la orilla izquierda.
+            cannibals_left (int): Número de caníbales en la orilla izquierda.
+            boat_is_on_left_bank (bool): True si el bote está en la orilla izquierda.
+            parent_state (State | None, optional): El estado que generó este (para
+                reconstrucción de ruta). Defaults to None.
+            action_taken (str | None, optional): Descripción legible de cómo se llegó
+                a este estado. Defaults to None.
         """
         self.missionaries_left: int = missionaries_left
         self.cannibals_left: int = cannibals_left
@@ -64,12 +67,18 @@ class State:
         """Número de caníbales en la orilla derecha."""
         return TOTAL_CANNIBALS - self.cannibals_left
 
+
+
     def is_valid_state(self) -> bool:
-        """
-        Retorna True si este estado satisface todas las restricciones del problema:
-          - Los conteos deben estar dentro de los límites [0, TOTAL].
-          - En la orilla izquierda: misioneros >= caníbales (a menos que no haya misioneros).
-          - En la orilla derecha: misioneros >= caníbales (a menos que no haya misioneros).
+        """Verifica si este estado satisface las restricciones del problema.
+
+        Las restricciones son:
+        - Los conteos deben estar dentro de los límites [0, TOTAL].
+        - En la orilla izquierda: misioneros >= caníbales (si hay misioneros).
+        - En la orilla derecha: misioneros >= caníbales (si hay misioneros).
+
+        Returns:
+            bool: True si el estado es válido, False en caso contrario.
         """
         # Verificación de límites
         if not (0 <= self.missionaries_left <= TOTAL_MISSIONARIES):
@@ -88,9 +97,10 @@ class State:
         return True
 
     def is_goal_state(self) -> bool:
-        """
-        Retorna True cuando todos los misioneros y caníbales han cruzado
-        a la orilla derecha y el bote también está en la orilla derecha.
+        """Verifica si este estado es el estado meta.
+
+        Returns:
+            bool: True si todos cruzaron a la orilla derecha, False en caso contrario.
         """
         return (
             self.missionaries_left == 0
@@ -99,18 +109,13 @@ class State:
         )
 
     def generate_successors(self) -> list[State]:
-        """
-        Genera todos los estados sucesores válidos desde el estado actual.
-
-        Para cada movimiento posible del bote, el bote cruza desde su orilla
-        actual a la opuesta llevando a los pasajeros.
-        Solo se retornan los estados que pasan is_valid_state().
+        """Genera todos los estados sucesores válidos desde el estado actual.
 
         Returns:
-            Una lista de objetos State válidos alcanzables desde este estado.
+            list[State]: Una lista de objetos State válidos alcanzables desde
+                este estado.
         """
         successors: list[State] = []
-
         for missionaries_on_boat, cannibals_on_boat in BOAT_MOVES:
 
             if self.boat_is_on_left_bank:
@@ -127,7 +132,6 @@ class State:
             action_description = (
                 f"Mover {missionaries_on_boat} MISIONEROS y {cannibals_on_boat} CANIBALES {direction}"
             )
-
             candidate = State(
                 missionaries_left=new_missionaries_left,
                 cannibals_left=new_cannibals_left,
@@ -138,7 +142,7 @@ class State:
 
             if candidate.is_valid_state():
                 successors.append(candidate)
-
+                
         return successors
 
     # Métodos dunder para hashing e igualdad

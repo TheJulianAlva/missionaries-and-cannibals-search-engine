@@ -1,12 +1,8 @@
-"""
-Módulo: utils.py
-Descripción: Funciones de apoyo.
+"""Funciones de apoyo y utilidades para el problema.
 
-Funciones disponibles:
-    - reconstruct_solution_path: Reconstruye la lista de acciones desde la meta.
-    - render_state_ascii:        Dibuja el estado del río en formato ASCII.
-    - print_solution: Imprime en consola la ruta de solución y las métricas.
-    - measure_execution_performance: Mide tiempo de ejecución y memoria de un algoritmo.
+Este módulo contiene funciones auxiliares para reconstruir rutas de solución,
+visualizar estados en ASCII, imprimir resultados y medir el rendimiento
+de los algoritmos de búsqueda.
 """
 
 from __future__ import annotations
@@ -14,22 +10,19 @@ from __future__ import annotations
 import time
 import tracemalloc
 from collections.abc import Callable
+from typing import Any
 
 from src.state import State
 
 
-def _reconstruct_solution_path(final_state: State) -> list[State]:
-    """
-    Reconstruye la secuencia de estados desde el inicio hasta la meta.
-
-    Itera hacia atrás siguiendo el atributo parent_state de cada nodo
-    hasta llegar al estado raíz (sin padre).
+def reconstruct_solution_path(final_state: State) -> list[State]:
+    """Reconstruye la secuencia de estados desde el inicio hasta la meta.
 
     Args:
-        final_state: El estado meta devuelto por el algoritmo de búsqueda.
+        final_state (State): El estado meta devuelto por el algoritmo de búsqueda.
 
     Returns:
-        Lista ordenada de objetos State, del inicio a la meta.
+        list[State]: Lista ordenada de objetos State, del inicio a la meta.
     """
     path: list[State] = []
     current: State | None = final_state
@@ -43,21 +36,19 @@ def _reconstruct_solution_path(final_state: State) -> list[State]:
 
 
 def _render_state_ascii(state: State) -> str:
-    """
-    Genera una representación visual ASCII del estado actual del río.
+    """Genera una representación visual ASCII del estado actual del río.
 
     Args:
-        state: El estado del problema a visualizar.
+        state (State): El estado del problema a visualizar.
 
     Returns:
-        String con la representación ASCII del estado.
+        str: Cadena de texto con la representación ASCII del estado.
     """
     left_m = "m " * state.missionaries_left
     left_c = "c " * state.cannibals_left
     right_m = "m " * state.missionaries_right
     right_c = "c " * state.cannibals_right
 
-    # El bote aparece en la orilla donde está
     boat_left  = "B " if state.boat_is_on_left_bank else "  "
     boat_right = "B " if not state.boat_is_on_left_bank else "  "
 
@@ -71,7 +62,6 @@ def _render_state_ascii(state: State) -> str:
 
     return f"  {left_bank}   {river}   {right_bank}"
 
-
 def _print_solution(
     algorithm_name: str,
     final_state: State | None,
@@ -79,16 +69,16 @@ def _print_solution(
     elapsed_time: float | None = None,
     peak_memory_kb: float | None = None,
 ) -> None:
-    """
-    Imprime en consola el resultado de una búsqueda de manera estructurada,
-    incluyendo la visualización ASCII de cada paso.
+    """Imprime en consola el resultado de una búsqueda de manera estructurada.
+
+    Incluye la visualización ASCII de cada paso de la solución.
 
     Args:
-        algorithm_name:  Nombre descriptivo del algoritmo.
-        final_state:     Estado meta con su cadena de padres, o None si no hay solución.
-        nodes_explored:  Número de nodos procesados por el algoritmo.
-        elapsed_time:    Tiempo de ejecución en segundos (opcional).
-        peak_memory_kb:  Memoria pico en kilobytes (opcional).
+        algorithm_name (str): Nombre descriptivo del algoritmo.
+        final_state (State | None): Estado meta con su cadena de padres, o None si no hay solución.
+        nodes_explored (int): Número de nodos procesados por el algoritmo.
+        elapsed_time (float | None, optional): Tiempo de ejecución en segundos. Defaults to None.
+        peak_memory_kb (float | None, optional): Memoria pico en kilobytes. Defaults to None.
     """
     separator = "-" * 60
     print(f"\n{separator}")
@@ -98,7 +88,7 @@ def _print_solution(
     if final_state is None:
         print("  No se encontro solucion.")
     else:
-        states_path = _reconstruct_solution_path(final_state)
+        states_path = reconstruct_solution_path(final_state)
         print(f"  Pasos en la solucion: {len(states_path) - 1}")
         print()
 
@@ -122,24 +112,24 @@ def _print_solution(
 
     print(separator)
 
-
 def measure_execution_performance(
     algorithm_function: Callable[[State], tuple[State | None, int]],
     initial_state: State,
     algorithm_name: str,
-) -> None:
-    """
-    Mide el tiempo de ejecución y la memoria pico de un algoritmo de búsqueda,
-    luego imprime un reporte en consola.
+) -> dict[str, Any]:
+    """Mide el tiempo de ejecución y la memoria pico de un algoritmo de búsqueda.
 
-    Utiliza:
-        - time.perf_counter() para tiempo de CPU.
-        - tracemalloc para la memoria pico del proceso en bytes.
+    Imprime un reporte en consola utilizando time.perf_counter() para el tiempo de CPU,
+    y tracemalloc para el registro de la memoria pico.
 
     Args:
-        algorithm_function: La función de búsqueda a medir.
-        initial_state: El estado inicial del problema.
-        algorithm_name: Nombre para mostrar en la salida.
+        algorithm_function (Callable): La función de búsqueda a medir.
+        initial_state (State): El estado inicial del problema.
+        algorithm_name (str): Nombre descriptivo del algoritmo.
+
+    Returns:
+        dict[str, Any]: Diccionario con métricas de la ejecución, incluyendo estado final,
+            tiempo transcurrido, nodos explorados y uso de memoria pico.
     """
     tracemalloc.start()
     start_time = time.perf_counter()
@@ -161,3 +151,11 @@ def measure_execution_performance(
         elapsed_time=elapsed_time,
         peak_memory_kb=peak_memory_kb,
     )
+
+    return {
+        "algorithm_name": algorithm_name,
+        "final_state": final_state,
+        "nodes_explored": nodes_explored,
+        "elapsed_time": elapsed_time,
+        "peak_memory_kb": peak_memory_kb,
+    }
